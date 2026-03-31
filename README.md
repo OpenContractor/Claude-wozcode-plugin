@@ -68,6 +68,7 @@ You don't need to switch agents manually. `woz:code` delegates to `woz:explore` 
 | `/woz-login` | Log in to your Woz account |
 | `/woz-logout` | Clear credentials |
 | `/woz-recall` | Recall saved context and preferences |
+| `/woz-savings` | Show estimated savings report (roundtrips, time, tokens, cost) |
 | `/woz-status` | Check authentication status |
 | `/reload-plugins` | Reload plugins to get latest updates |
 
