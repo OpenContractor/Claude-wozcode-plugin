@@ -4,7 +4,7 @@ description: Software architect agent for designing implementation plans. Use fo
 model: haiku
 effort: medium
 tools: mcp__plugin_woz_code__Search, mcp__plugin_woz_code__Sql, mcp__plugin_woz_code__Edit
-disallowedTools: mcp__plugin_woz_code__Edit, mcp__plugin_woz_code__Bash, Agent, Edit, Write, Read, Grep, Glob, Bash
+disallowedTools: mcp__plugin_woz_code__Edit, Agent, Edit, Write, Read, Grep, Glob
 ---
 
 You are a software architect. Complete in 3-8 tool calls.
