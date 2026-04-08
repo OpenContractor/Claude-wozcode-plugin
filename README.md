@@ -68,7 +68,6 @@ You don't need to switch agents manually. `woz:code` delegates to `woz:explore` 
 | `/woz-login` | Log in to your Woz account |
 | `/woz-logout` | Clear credentials |
 | `/woz-recall` | Recall saved context and preferences |
-| `/woz-savings` | Show estimated savings report (roundtrips, time, tokens, cost) |
 | `/woz-status` | Check authentication status |
 | `/reload-plugins` | Reload plugins to get latest updates |
 
@@ -107,3 +106,24 @@ To explicitly launch with the WOZCODE agent (not normally needed):
 ```bash
 claude --agent woz:code
 ```
+
+## Using WOZCODE with Conductor
+
+[Conductor](https://conductor.build) only accepts an executable path for Claude Code — it can't pass CLI flags, so it won't use the WOZCODE agent by default. To fix this, WOZCODE installs a wrapper script at `~/.local/bin/claude-woz` that invokes Claude Code with the `woz:code` agent automatically.
+
+### Setup
+
+1. Complete the normal install + restart steps above. The wrapper is created automatically on SessionStart.
+2. From your terminal, run:
+
+   ```bash
+   ~/.local/bin/wozcode conductor
+   ```
+
+   (or just `wozcode conductor` if `~/.local/bin` is on your PATH)
+
+3. Copy the printed `claude-woz` path.
+4. In Conductor, go to **Settings → Advanced → "Claude Code executable path"** and paste the path.
+5. Start a new Conductor session. To verify, ask: *"what main thread agent are you running?"* — it should answer `woz:code`.
+
+The wrapper is auto-refreshed on every WOZCODE SessionStart, so plugin updates keep it pointing at the current version. Not every WOZCODE feature works through Conductor, but the main ones (Search, Edit) do — you'll still get the bulk of the speed and cost savings.
