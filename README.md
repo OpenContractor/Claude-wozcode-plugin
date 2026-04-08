@@ -109,21 +109,18 @@ claude --agent woz:code
 
 ## Using WOZCODE with Conductor
 
-[Conductor](https://conductor.build) only accepts an executable path for Claude Code — it can't pass CLI flags, so it won't use the WOZCODE agent by default. To fix this, WOZCODE installs a wrapper script at `~/.local/bin/claude-woz` that invokes Claude Code with the `woz:code` agent automatically.
+Connect WOZCODE to [Conductor](https://conductor.build).
 
-### Setup
-
-1. Complete the normal install + restart steps above. The wrapper is created automatically on SessionStart.
-2. From your terminal, run:
+1. **Install WOZCODE and restart Claude Code** — follow the install steps above, then restart Claude Code.
+2. **Install WOZCODE for Conductor and get the executable path** — from your terminal, run:
 
    ```bash
-   ~/.local/bin/wozcode conductor
+   wozcode conductor
    ```
 
-   (or just `wozcode conductor` if `~/.local/bin` is on your PATH)
+   (or `~/.local/bin/wozcode conductor` if `wozcode` isn't on your PATH)
 
-3. Copy the printed `claude-woz` path.
-4. In Conductor, go to **Settings → Advanced → "Claude Code executable path"** and paste the path.
-5. Start a new Conductor session. To verify, ask: *"what main thread agent are you running?"* — it should answer `woz:code`.
+3. **Paste it** into Conductor → Settings → Advanced → "Claude Code executable path".
+4. **Start a new Conductor session** and ask *"what agent are you running?"* — it should answer `woz:code`.
 
-The wrapper is auto-refreshed on every WOZCODE SessionStart, so plugin updates keep it pointing at the current version. Not every WOZCODE feature works through Conductor, but the main ones (Search, Edit) do — you'll still get the bulk of the speed and cost savings.
+The `claude-woz` executable is auto-refreshed on every WOZCODE session start, so plugin updates keep it pointing at the current version. Not every WOZCODE feature works through Conductor yet, but Search and Edit do — you'll still get most of the speed and cost savings.
