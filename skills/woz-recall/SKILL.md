@@ -1,6 +1,6 @@
 ---
 name: woz-recall
-description: "Search past Claude Code sessions for commands, knowledge, solutions, and context. TRIGGER when: user says \"remember when\", \"we did this before\", \"we've done this\", \"last time we\", \"in a previous session\", \"how did we\", \"what was that command\", \"I remember doing\", \"find that thing from before\", \"we figured out\", \"there was a way to\", or any reference to past work/sessions/conversations. Also trigger on explicit /recall."
+description: "Semantically search past Claude Code sessions to recall commands, solutions, and context from prior conversations. TRIGGER on 'remember when', 'last time', 'we did this before', 'how did we', or /woz-recall."
 ---
 
 # Session Recall
