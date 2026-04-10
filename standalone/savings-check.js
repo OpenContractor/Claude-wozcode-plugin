@@ -39,7 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.27",
+  version: "0.3.28",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://withwoz.com",
   type: "module",
@@ -9316,11 +9316,19 @@ async function main() {
   console.log(`${BOLD}${BRAND}${RESET} ${DIM}\u2014 Claude Code Savings Estimator${RESET}`);
   console.log();
   console.log(`${DIM}Scanning ~/.claude/projects/ ...${RESET}`);
+  const savedWarn = console.warn;
+  const savedError = console.error;
+  console.warn = () => {
+  };
+  console.error = () => {
+  };
   const nowMs = Date.now();
   const results = await computeBaselineFromProjects({
     maxSessions: MAX_SESSIONS_TO_SCAN,
     nowMs
   });
+  console.warn = savedWarn;
+  console.error = savedError;
   if (results.length === 0) {
     console.log();
     console.log(`${DIM}No Claude Code sessions found in ~/.claude/projects/${RESET}`);
