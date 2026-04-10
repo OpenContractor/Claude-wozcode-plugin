@@ -39,7 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.28",
+  version: "0.3.29",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://withwoz.com",
   type: "module",
@@ -93,6 +93,8 @@ var WOZ_CODE_PLUGIN_NAME = "woz";
 var WOZCODE_VERSION = package_default.version;
 var WOZCODE_CONFIG_DIR_NAME = ".wozcode";
 var WOZ_CODE_AGENT_NAME = `${WOZ_CODE_PLUGIN_NAME}:code`;
+var BENCHMARK_SCRIPT_KEY = "benchmark";
+var BENCHMARK_SCRIPT_NAME = `${BENCHMARK_SCRIPT_KEY}.js`;
 var MCP_PLUGIN_PREFIX = "mcp__plugin_woz_code__";
 var WOZ_MARKETPLACE_GITHUB_REPO = "WithWoz/wozcode-plugin";
 var WOZ_MARKETPLACE_PLUGIN_JSON_URL = `https://raw.githubusercontent.com/${WOZ_MARKETPLACE_GITHUB_REPO}/main/.claude-plugin/plugin.json`;
@@ -9122,16 +9124,7 @@ async function discoverClaudeCodeSessions(opts) {
     if (aMatch !== bMatch) return bMatch ? 1 : -1;
     return b2.mtimeMs - a2.mtimeMs;
   });
-  if (opts.filter != null) {
-    const filtered = [];
-    for (const s2 of sessions) {
-      if (filtered.length >= opts.maxSessions) break;
-      const keep = await opts.filter(s2);
-      if (keep) filtered.push(s2);
-    }
-    return filtered;
-  }
-  return sessions.slice(0, opts.maxSessions);
+  return opts.maxSessions != null ? sessions.slice(0, opts.maxSessions) : sessions;
 }
 async function* readLinesFromEnd(filePath, chunkSize = 65536) {
   const fd = await fs2.promises.open(filePath, "r");
@@ -9247,58 +9240,41 @@ async function* streamStoredSessionMessages(sessionJsonlFilePath, readFromEnd, o
 // src/plugin/baseline-first-run.ts
 var MAX_SESSIONS = 200;
 var MAX_FILE_BYTES = 50 * 1024 * 1024;
+var SCAN_CONCURRENCY = 10;
 async function computeBaselineFromProjects(opts = {}) {
   const nowMs = opts.nowMs ?? Date.now();
   const maxSessions = opts.maxSessions ?? MAX_SESSIONS;
-  const cutoffMs = opts.windowDays != null ? nowMs - opts.windowDays * 864e5 : 0;
-  const files = await discoverClaudeCodeSessions({
-    maxSessions,
-    projectsDirPath: opts.projectsDir,
-    filter: (file) => sessionPassesFilter(file, cutoffMs)
+  const allFiles = await discoverClaudeCodeSessions({
+    projectsDirPath: opts.projectsDir
   });
+  const candidates = allFiles.filter((f) => f.sizeBytes <= MAX_FILE_BYTES);
   const results = [];
-  for (const f of files) {
-    try {
-      const result = await scanSessionFile(f);
-      if (result.turnCount === 0) continue;
-      results.push(result);
-    } catch {
+  for (let i2 = 0; i2 < candidates.length && results.length < maxSessions; i2 += SCAN_CONCURRENCY) {
+    const batch = candidates.slice(i2, i2 + SCAN_CONCURRENCY);
+    const batchResults = await Promise.all(batch.map(scanAndFilter));
+    for (const r of batchResults) {
+      if (r != null && results.length < maxSessions) results.push(r);
     }
   }
   return results;
 }
-async function scanSessionFile(file) {
-  const state = initSessionBaseline({
-    sessionId: file.sessionId,
-    projectPath: file.projectPath,
-    mtimeMs: file.mtimeMs
-  });
-  for await (const [message] of streamStoredSessionMessages(file.sessionFilePath)) {
-    ingestMessage(state, message);
-  }
-  return finalizeSessionBaseline(state);
-}
-async function sessionPassesFilter(file, cutoffMs) {
-  if (cutoffMs > 0 && file.mtimeMs < cutoffMs) return false;
-  if (file.sizeBytes > MAX_FILE_BYTES) return false;
-  return await isSessionVanilla(file.sessionFilePath);
-}
-async function isSessionVanilla(sessionFilePath) {
+async function scanAndFilter(file) {
   try {
-    for await (const [message] of streamStoredSessionMessages(sessionFilePath)) {
-      if (message.type !== "assistant") continue;
-      const content = message.message.content;
-      if (!Array.isArray(content)) continue;
-      for (const block of content) {
-        if (block.type === "tool_use" && typeof block.name === "string" && block.name.startsWith(MCP_PLUGIN_PREFIX)) {
-          return false;
-        }
-      }
+    const state = initSessionBaseline({
+      sessionId: file.sessionId,
+      projectPath: file.projectPath,
+      mtimeMs: file.mtimeMs
+    });
+    for await (const [message] of streamStoredSessionMessages(file.sessionFilePath)) {
+      ingestMessage(state, message);
+      if (!state.isVanilla) return void 0;
     }
+    const result = finalizeSessionBaseline(state);
+    if (result.turnCount === 0) return void 0;
+    return result;
   } catch {
-    return false;
+    return void 0;
   }
-  return true;
 }
 
 // src/plugin/savings-check-standalone.ts
@@ -9323,12 +9299,16 @@ async function main() {
   console.error = () => {
   };
   const nowMs = Date.now();
-  const results = await computeBaselineFromProjects({
-    maxSessions: MAX_SESSIONS_TO_SCAN,
-    nowMs
-  });
-  console.warn = savedWarn;
-  console.error = savedError;
+  let results;
+  try {
+    results = await computeBaselineFromProjects({
+      maxSessions: MAX_SESSIONS_TO_SCAN,
+      nowMs
+    });
+  } finally {
+    console.warn = savedWarn;
+    console.error = savedError;
+  }
   if (results.length === 0) {
     console.log();
     console.log(`${DIM}No Claude Code sessions found in ~/.claude/projects/${RESET}`);
@@ -9338,37 +9318,38 @@ async function main() {
     console.log();
     return;
   }
-  const vanilla = results.filter((r) => r.isVanilla);
-  const skipped = results.length - vanilla.length;
-  const skippedNote = skipped > 0 ? ` (${skipped} already using WozCode, skipped)` : "";
-  console.log(`${DIM}Analyzed ${results.length} sessions${skippedNote}.${RESET}`);
+  const vanilla = results;
+  console.log(`${DIM}Analyzed ${results.length} sessions.${RESET}`);
   const lastMonthCutoffMs = nowMs - LAST_MONTH_DAYS * 864e5;
   const lastMonthResults = vanilla.filter((r) => r.mtimeMs >= lastMonthCutoffMs);
   const lastMonthEstimate = aggregateSessions(lastMonthResults, {
     windowDays: LAST_MONTH_DAYS,
     nowMs
   });
+  const oldestMs = vanilla.length > 0 ? vanilla.reduce((m2, r) => Math.min(m2, r.mtimeMs), Infinity) : nowMs;
+  const lifetimeWindowDays = Math.max(1, Math.ceil((nowMs - oldestMs) / 864e5));
   const lifetimeEstimate = aggregateSessions(vanilla, {
-    windowDays: 3650,
+    windowDays: lifetimeWindowDays,
     nowMs
   });
   const lastMonthRange = lastMonthResults.length > 0 ? {
-    fromMs: Math.min(...lastMonthResults.map((r) => r.mtimeMs)),
-    toMs: Math.max(...lastMonthResults.map((r) => r.mtimeMs))
+    fromMs: lastMonthResults.reduce((m2, r) => Math.min(m2, r.mtimeMs), Infinity),
+    toMs: lastMonthResults.reduce((m2, r) => Math.max(m2, r.mtimeMs), -Infinity)
   } : void 0;
-  const lifetimeRange = vanilla.length > 0 ? {
-    fromMs: Math.min(...vanilla.map((r) => r.mtimeMs)),
-    toMs: Math.max(...vanilla.map((r) => r.mtimeMs))
-  } : void 0;
+  const newestMs = vanilla.length > 0 ? vanilla.reduce((m2, r) => Math.max(m2, r.mtimeMs), -Infinity) : nowMs;
+  const lifetimeRange = vanilla.length > 0 ? { fromMs: oldestMs, toMs: newestMs } : void 0;
   const hitLifetimeCap = vanilla.length >= MAX_SESSIONS_TO_SCAN;
+  const showLifetime = vanilla.length > lastMonthResults.length;
   console.log();
-  printSection("LAST 30 DAYS", lastMonthEstimate, lastMonthRange);
-  console.log();
-  printSection("LIFETIME", lifetimeEstimate, lifetimeRange);
-  if (hitLifetimeCap) {
-    console.log(
-      `  ${DIM}(capped at the ${MAX_SESSIONS_TO_SCAN} most-recent vanilla sessions \u2014 older sessions excluded)${RESET}`
-    );
+  printSection(showLifetime ? "LAST 30 DAYS" : "YOUR USAGE", lastMonthEstimate, lastMonthRange);
+  if (showLifetime) {
+    console.log();
+    printSection("LIFETIME", lifetimeEstimate, lifetimeRange);
+    if (hitLifetimeCap) {
+      console.log(
+        `  ${DIM}(capped at the ${MAX_SESSIONS_TO_SCAN} most-recent vanilla sessions \u2014 older sessions excluded)${RESET}`
+      );
+    }
   }
   console.log();
   printInstallFooter(lastMonthEstimate, lifetimeEstimate);
@@ -9461,6 +9442,9 @@ function printInstallFooter(lastMonth, lifetime) {
   console.log();
   console.log(
     `  ${DIM}Privacy: ran entirely on your machine. Nothing was uploaded.${RESET}`
+  );
+  console.log(
+    `  ${DIM}Only analyzes Claude Code sessions (CLI, Desktop, and IDE extensions). Regular chat history is not included.${RESET}`
   );
   console.log();
 }
