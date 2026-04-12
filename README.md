@@ -76,6 +76,25 @@ You don't need to switch agents manually. `woz:code` delegates to `woz:explore` 
 
 You can also type `/woz` to see all available WozCode commands in one place.
 
+## /woz-settings
+
+WOZCODE settings live in `~/.claude/settings.json` under the `wozcode` key. Use `/woz-settings` to view or change them — just ask in plain English ("turn off attribution", "hide status line tips", etc.).
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `attribution` | `true` | Co-Authored-By on commits + PR badge |
+| `statusLine` | `true` | Master toggle for the WOZCODE status line |
+| `statusLineSession` | `true` | Show session savings in status line |
+| `statusLineLifetime` | `true` | Show lifetime savings in status line |
+| `statusLineTips` | `true` | Show quick tips in status line |
+| `spinnerVerbs` | `true` | WOZ-themed spinner verbs |
+
+### Commit & PR attribution
+
+When WOZCODE is enabled and you have no existing attribution entry in `~/.claude/settings.json`, WOZCODE installs its own commit/PR co-author line, replacing Claude Code's built-in default. This replacement is announced on the login and session where it first happens. Users who had Claude Code attribution explicitly disabled or customized (any existing `attribution` entry in `~/.claude/settings.json`) are left untouched. Toggle WOZCODE attribution any time with `/woz-settings attribution off`.
+
+Changes take effect immediately. For `attribution`, `statusLine`, and `spinnerVerbs`, also run `/reload-plugins` so Claude Code picks up the change in the current session.
+
 ## Managing the plugin
 
 ```
