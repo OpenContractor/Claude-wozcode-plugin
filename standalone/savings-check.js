@@ -39,7 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.30",
+  version: "0.3.32",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://withwoz.com",
   type: "module",
@@ -9363,9 +9363,7 @@ function printSection(title, e2, dateRange) {
     return;
   }
   if (dateRange != null) {
-    console.log(
-      `  Date range:         ${formatDate(dateRange.fromMs)} \u2192 ${formatDate(dateRange.toMs)}`
-    );
+    console.log(`  Date range:         ${formatDate(dateRange.fromMs)} \u2192 ${formatDate(dateRange.toMs)}`);
   }
   console.log(`  Sessions analyzed:  ${e2.vanillaSessions}`);
   console.log(`  Turns:              ${e2.totalTurns.toLocaleString()}`);
@@ -9380,12 +9378,8 @@ function printSection(title, e2, dateRange) {
   console.log(
     `    ${GREEN}${formatCost(e2.rawDetected.totalCostSavedInUsd)}${RESET} on API costs  ${DIM}(~${pctSaved}% of spend)${RESET}`
   );
-  console.log(
-    `    ${GREEN}${e2.rawDetected.totalCallsSaved.toLocaleString()}${RESET} tool-call roundtrips avoided`
-  );
-  console.log(
-    `    ${GREEN}${formatDuration(e2.rawDetected.totalTimeSavedInMs)}${RESET} of wait time`
-  );
+  console.log(`    ${GREEN}${e2.rawDetected.totalCallsSaved.toLocaleString()}${RESET} tool-call roundtrips avoided`);
+  console.log(`    ${GREEN}${formatDuration(e2.rawDetected.totalTimeSavedInMs)}${RESET} of wait time`);
   if (e2.topPatterns.length > 0) {
     console.log();
     console.log(`  ${DIM}Top batching patterns detected:${RESET}`);
@@ -9407,42 +9401,26 @@ function printInstallFooter(lastMonth, lifetime) {
   if (lastMonthSaved >= 1) {
     const amt = formatCost(lastMonthSaved);
     const dur = formatDuration(lastMonthTime);
-    console.log(
-      `  \u{1F9D9}  You just spent ${GREEN}${amt}${RESET} you didn't have to spend.`
-    );
-    console.log(
-      `      And waited ${GREEN}${dur}${RESET} you didn't have to wait.`
-    );
+    console.log(`  \u{1F9D9}  You just spent ${GREEN}${amt}${RESET} you didn't have to spend.`);
+    console.log(`      And waited ${GREEN}${dur}${RESET} you didn't have to wait.`);
     console.log();
     console.log(`      ${BOLD}Don't do it twice.${RESET}`);
   } else if (lifetimeSaved >= 1) {
     const amt = formatCost(lifetimeSaved);
     const dur = formatDuration(lifetimeTime);
-    console.log(
-      `  \u{1F9D9}  Your Claude Code history has ${GREEN}${amt}${RESET} and ${GREEN}${dur}${RESET}`
-    );
+    console.log(`  \u{1F9D9}  Your Claude Code history has ${GREEN}${amt}${RESET} and ${GREEN}${dur}${RESET}`);
     console.log(`      of savings you missed.`);
     console.log();
     console.log(`      ${BOLD}The next batch is still yours to grab.${RESET}`);
   } else {
-    console.log(
-      `  \u{1F9D9}  No batchable savings detected today \u2014 but install now,`
-    );
-    console.log(
-      `      and we'll start tracking what you save from here on out.`
-    );
+    console.log(`  \u{1F9D9}  No batchable savings detected today \u2014 but install now,`);
+    console.log(`      and we'll start tracking what you save from here on out.`);
   }
   console.log();
-  console.log(
-    `  ${BOLD}\u2192${RESET}   Create your account:  ${CYAN}https://wozcode.com?ref=savings-check${RESET}`
-  );
-  console.log(
-    `      ${DIM}Install in 30 seconds. Works in any Claude Code session.${RESET}`
-  );
+  console.log(`  ${BOLD}\u2192${RESET}   Create your account:  ${CYAN}https://wozcode.com?ref=savings-check${RESET}`);
+  console.log(`      ${DIM}Install in 30 seconds. Works in any Claude Code session.${RESET}`);
   console.log();
-  console.log(
-    `  ${DIM}Privacy: ran entirely on your machine. Nothing was uploaded.${RESET}`
-  );
+  console.log(`  ${DIM}Privacy: ran entirely on your machine. Nothing was uploaded.${RESET}`);
   console.log(
     `  ${DIM}Only analyzes Claude Code sessions (CLI, Desktop, and IDE extensions). Regular chat history is not included.${RESET}`
   );
@@ -9493,9 +9471,6 @@ function formatPatternLabel(pattern) {
   }
 }
 main().catch((err) => {
-  console.error(
-    `${BRAND} savings check failed:`,
-    err instanceof Error ? err.message : String(err)
-  );
+  console.error(`${BRAND} savings check failed:`, err instanceof Error ? err.message : String(err));
   process.exit(1);
 });

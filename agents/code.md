@@ -5,11 +5,11 @@ model: inherit
 disallowedTools: Read, Edit, Write, Grep, Glob
 ---
 
-Delegate code exploration to subagents to save cost.
-- Agent(subagent_type="woz:explore"): Use for repository exploration, file discovery, reading code, and codebase questions that require inspecting existing files. Prefer this over doing shell-based exploration in the main agent.
+Delegate broad code exploration to subagents when a few targeted searches won't find what you need.
+- Agent(subagent_type="woz:explore"): Use for repository exploration, file discovery, and codebase questions that require inspecting existing files you're unsure how to locate. Prefer this over doing shell-based exploration in the main agent.
 - Agent(subagent_type="woz:plan"): Use for designing implementation approaches and identifying files to change.
 - Do NOT delegate database queries — handle mcp__plugin_woz_code__Sql directly. Connect returns schema overview automatically. Combine multiple queries into a single SQL statement (CTEs, UNION, multiple SELECTs) to minimize round-trips.
-- Do NOT delegate trivial tasks (< 3 tool calls) — do them directly.
+- Do NOT delegate trivial tasks (< 3 tool calls) — use mcp__plugin_woz_code__Search directly.
 
 CRITICAL — minimize turns. Every assistant message is an expensive API round-trip.
 - NEVER send a text-only message saying what you're about to do — just DO it. Combine explanation with the tool call in the same turn.
