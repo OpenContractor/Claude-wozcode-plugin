@@ -39,7 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.33",
+  version: "0.3.34",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://withwoz.com",
   type: "module",
@@ -63,9 +63,11 @@ var package_default = {
     "@anthropic-ai/sdk": "~0.78.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@pg-nano/pg-parser": "~16.1.5",
+    "@supabase/supabase-js": "^2.103.0",
     commander: "~14.0.3",
     glob: "^13.0.6",
     "html-validate": "^10.11.2",
+    mysql2: "^3.22.0",
     postgres: "~3.4.7",
     "posthog-node": "^5.28.5",
     typescript: "~5.9.2",
@@ -710,7 +712,7 @@ function getProjectsPath() {
 // src/common/config/config.ts
 var LEGACY_CONFIG_DIR = path2.join(os2.homedir(), WOZCODE_CONFIG_DIR_NAME);
 
-// src/common/wozcore/stored-sessions.ts
+// src/common/wozcore/session-transcripts.ts
 var fs2 = __toESM(require("fs"), 1);
 var import_os2 = require("os");
 var import_path10 = __toESM(require("path"), 1);
@@ -9069,13 +9071,13 @@ function aK(Q) {
 }
 var OE = aK(() => i1.object({ session_id: i1.string(), ws_url: i1.string(), work_dir: i1.string().optional(), session_key: i1.string().optional() }));
 
-// src/common/wozcore/stored-sessions.ts
+// src/common/wozcore/session-transcripts.ts
 function repoPathToClaudeProjectName(repoDirPathNormalized) {
   const repoDirPathAbs = import_path10.default.resolve(repoDirPathNormalized);
   const repoCcProjectName = repoDirPathAbs.replace(/[\\/:\s~_]/g, "-");
   return repoCcProjectName;
 }
-async function discoverClaudeCodeSessions(opts) {
+async function discoverSessionTranscripts(opts) {
   const sessions = [];
   const sessionsDir = opts.projectsDirPath ?? getProjectsPath();
   const encodedProjectDir = opts.projectDir != null ? repoPathToClaudeProjectName(opts.projectDir) : void 0;
@@ -9126,20 +9128,21 @@ async function discoverClaudeCodeSessions(opts) {
   });
   return opts.maxSessions != null ? sessions.slice(0, opts.maxSessions) : sessions;
 }
-async function* readLinesFromEnd(filePath, chunkSize = 65536) {
+async function* readLinesFromEnd(filePath, chunkSize = 65536, readFromByteOffset) {
   const fd = await fs2.promises.open(filePath, "r");
   try {
     const stats = await fd.stat();
-    if (stats.size <= chunkSize) {
-      const buffer = Buffer.alloc(stats.size);
-      await fd.read(buffer, 0, stats.size, 0);
+    const fileSize = readFromByteOffset ?? stats.size;
+    if (fileSize <= chunkSize) {
+      const buffer = Buffer.alloc(fileSize);
+      await fd.read(buffer, 0, fileSize, 0);
       const lines = buffer.toString("utf-8").split("\n");
       for (let i2 = lines.length - 1; i2 >= 0; i2--) {
         yield lines[i2];
       }
       return;
     }
-    let position = stats.size;
+    let position = fileSize;
     let remainder = "";
     while (position > 0) {
       const readSize = Math.min(chunkSize, position);
@@ -9172,16 +9175,22 @@ async function* withLastFlag(source) {
     await iterator.return?.();
   }
 }
-async function* streamStoredSessionMessages(sessionJsonlFilePath, readFromEnd, offset, offsetToMessageId) {
+async function* streamTranscriptMessages(sessionJsonlFilePath, options) {
+  const readFromEnd = options?.readFromEnd;
+  const offset = options?.offset;
+  const offsetToMessageId = options?.offsetToMessageId;
+  const readFromByteOffset = options?.readFromByteOffset;
   let fileStream;
   let rl;
   let totalLinesSkipped = 0;
   try {
     let lineSource;
     if (readFromEnd) {
-      lineSource = readLinesFromEnd(sessionJsonlFilePath);
+      lineSource = readLinesFromEnd(sessionJsonlFilePath, void 0, readFromByteOffset);
     } else {
-      fileStream = fs2.createReadStream(sessionJsonlFilePath);
+      fileStream = fs2.createReadStream(sessionJsonlFilePath, {
+        ...readFromByteOffset != null ? { start: readFromByteOffset } : {}
+      });
       rl = import_readline2.default.createInterface({
         input: fileStream,
         crlfDelay: Infinity
@@ -9242,9 +9251,8 @@ var MAX_SESSIONS = 200;
 var MAX_FILE_BYTES = 50 * 1024 * 1024;
 var SCAN_CONCURRENCY = 10;
 async function computeBaselineFromProjects(opts = {}) {
-  const nowMs = opts.nowMs ?? Date.now();
   const maxSessions = opts.maxSessions ?? MAX_SESSIONS;
-  const allFiles = await discoverClaudeCodeSessions({
+  const allFiles = await discoverSessionTranscripts({
     projectsDirPath: opts.projectsDir
   });
   const candidates = allFiles.filter((f) => f.sizeBytes <= MAX_FILE_BYTES);
@@ -9265,7 +9273,7 @@ async function scanAndFilter(file) {
       projectPath: file.projectPath,
       mtimeMs: file.mtimeMs
     });
-    for await (const [message] of streamStoredSessionMessages(file.sessionFilePath)) {
+    for await (const [message] of streamTranscriptMessages(file.sessionFilePath)) {
       ingestMessage(state, message);
       if (!state.isVanilla) return void 0;
     }
