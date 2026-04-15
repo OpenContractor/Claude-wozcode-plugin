@@ -39,7 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.34",
+  version: "0.3.35",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://withwoz.com",
   type: "module",
@@ -122,7 +122,22 @@ var MODEL_PRICING = {
   "claude-haiku-3-5": pricingFromInput(0.8, 4),
   opus: pricingFromInput(5, 25),
   sonnet: pricingFromInput(3, 15),
-  haiku: pricingFromInput(0.8, 4)
+  haiku: pricingFromInput(0.8, 4),
+  // Cursor Composer family. Pricing per Cursor docs (2026):
+  //   Composer 2:      $0.50 in / $2.50 out / $0.20 cache read per million
+  //   Composer 2 Fast: $1.50 in / $7.50 out / $0.35 cache read per million
+  // Cache-write rate is not published; use input rate as a conservative default.
+  // Two key variants per model: hyphenated (CLI flag form, e.g. 'composer-2-fast')
+  // and space-separated (display name form, e.g. 'composer 2 fast') so both the
+  // --cursor-model flag and the system-init event's `model` field resolve.
+  // List Fast variants BEFORE base variants so the includes() fallback picks the
+  // more specific match first.
+  "composer-2-fast": { inputPerMillion: 1.5, cacheReadPerMillion: 0.35, cacheWritePerMillion: 1.5, outputPerMillion: 7.5 },
+  "composer 2 fast": { inputPerMillion: 1.5, cacheReadPerMillion: 0.35, cacheWritePerMillion: 1.5, outputPerMillion: 7.5 },
+  "composer-2": { inputPerMillion: 0.5, cacheReadPerMillion: 0.2, cacheWritePerMillion: 0.5, outputPerMillion: 2.5 },
+  "composer 2": { inputPerMillion: 0.5, cacheReadPerMillion: 0.2, cacheWritePerMillion: 0.5, outputPerMillion: 2.5 },
+  "composer-1.5": pricingFromInput(3.5, 17.5),
+  "composer 1.5": pricingFromInput(3.5, 17.5)
 };
 var DEFAULT_PRICING = pricingFromInput(3, 15);
 function getModelPricing(model) {
