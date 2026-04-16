@@ -50,6 +50,17 @@
         ]
       }
     ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-telemetry-hook.js"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
