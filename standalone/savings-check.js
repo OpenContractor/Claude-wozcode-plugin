@@ -13864,7 +13864,7 @@ var SubscriptionStatusSchema = external_exports.object({
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.39",
+  version: "0.3.40",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://wozcode.com",
   type: "module",
@@ -13879,8 +13879,7 @@ var package_default = {
     lint: "npx eslint src/",
     compile: "tsc --noEmit",
     format: "npx prettier --write 'src/**/*.{ts,js}'",
-    test: "node --import tsx --test 'src/**/*.test.ts'",
-    compare: "tsx src/benchmark/compare-runners.ts"
+    test: "node --import tsx --test 'src/**/*.test.ts'"
   },
   author: "Woz",
   license: "UNLICENSED",
