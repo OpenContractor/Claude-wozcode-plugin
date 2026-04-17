@@ -13864,7 +13864,7 @@ var SubscriptionStatusSchema = external_exports.object({
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.38",
+  version: "0.3.39",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://wozcode.com",
   type: "module",
@@ -13962,8 +13962,18 @@ var MODEL_PRICING = {
   // --cursor-model flag and the system-init event's `model` field resolve.
   // List Fast variants BEFORE base variants so the includes() fallback picks the
   // more specific match first.
-  "composer-2-fast": { inputPerMillion: 1.5, cacheReadPerMillion: 0.35, cacheWritePerMillion: 1.5, outputPerMillion: 7.5 },
-  "composer 2 fast": { inputPerMillion: 1.5, cacheReadPerMillion: 0.35, cacheWritePerMillion: 1.5, outputPerMillion: 7.5 },
+  "composer-2-fast": {
+    inputPerMillion: 1.5,
+    cacheReadPerMillion: 0.35,
+    cacheWritePerMillion: 1.5,
+    outputPerMillion: 7.5
+  },
+  "composer 2 fast": {
+    inputPerMillion: 1.5,
+    cacheReadPerMillion: 0.35,
+    cacheWritePerMillion: 1.5,
+    outputPerMillion: 7.5
+  },
   "composer-2": { inputPerMillion: 0.5, cacheReadPerMillion: 0.2, cacheWritePerMillion: 0.5, outputPerMillion: 2.5 },
   "composer 2": { inputPerMillion: 0.5, cacheReadPerMillion: 0.2, cacheWritePerMillion: 0.5, outputPerMillion: 2.5 },
   "composer-1.5": pricingFromInput(3.5, 17.5),
