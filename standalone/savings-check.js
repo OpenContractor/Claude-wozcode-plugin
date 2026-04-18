@@ -13842,13 +13842,16 @@ var WozcodeActiveBonusSchema = external_exports.object({
 var SubscriptionStatusSchema = external_exports.object({
   isValid: external_exports.boolean(),
   message: external_exports.string().nullish().transform((v2) => v2 ?? void 0),
-  // Unknown values (new server, old client) silently become undefined for forward-compat.
+  // Unknown values silently become undefined (forward-compat). Case-insensitive match is
+  // defensive against transient backend drift or old-payload replay from cached credentials.
   plan: external_exports.string().nullish().transform((v2) => {
-    if (v2 === "individual" || v2 === "org") return v2;
+    const upper = v2?.toUpperCase();
+    if (upper === "INDIVIDUAL" || upper === "ORG") return upper;
     return void 0;
   }),
   status: external_exports.string().nullish().transform((v2) => {
-    if (v2 === "free" || v2 === "paid") return v2;
+    const upper = v2?.toUpperCase();
+    if (upper === "FREE" || upper === "PAID") return upper;
     return void 0;
   }),
   monthlySavingsInUsd: external_exports.number().nullish().transform((v2) => v2 ?? void 0),
@@ -13864,7 +13867,7 @@ var SubscriptionStatusSchema = external_exports.object({
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.41",
+  version: "0.3.42",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://wozcode.com",
   type: "module",
@@ -13920,6 +13923,7 @@ var WOZ_CODE_PLUGIN_NAME = "woz";
 var WOZCODE_VERSION = package_default.version;
 var WOZCODE_CONFIG_DIR_NAME = ".wozcode";
 var WOZ_CODE_AGENT_NAME = `${WOZ_CODE_PLUGIN_NAME}:code`;
+var WOZ_CODE_FREE_AGENT_NAME = `${WOZ_CODE_PLUGIN_NAME}:code-free`;
 var BENCHMARK_SCRIPT_KEY = "benchmark";
 var BENCHMARK_SCRIPT_NAME = `${BENCHMARK_SCRIPT_KEY}.js`;
 var MCP_PLUGIN_PREFIX = "mcp__plugin_woz_code__";
