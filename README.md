@@ -113,6 +113,7 @@ To get the latest version:
 If `/woz-update` fails, force a clean reinstall from your shell:
 
 ```bash
+claude plugin marketplace update wozcode-marketplace
 claude plugin uninstall woz@wozcode-marketplace
 claude plugin install woz@wozcode-marketplace
 rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/wozcode/update-available.json" "$HOME/.wozcode/update-available.json"
