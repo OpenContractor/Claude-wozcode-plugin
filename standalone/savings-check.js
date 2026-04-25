@@ -13867,7 +13867,7 @@ var SubscriptionStatusSchema = external_exports.object({
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.53",
+  version: "0.3.55",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://wozcode.com",
   type: "module",
@@ -14037,7 +14037,6 @@ function addSavings(target, source) {
 
 // src/common/wozcore/session-transcripts.ts
 var fs3 = __toESM(require("fs"), 1);
-var import_os4 = require("os");
 var import_path10 = __toESM(require("path"), 1);
 var import_readline3 = __toESM(require("readline"), 1);
 
