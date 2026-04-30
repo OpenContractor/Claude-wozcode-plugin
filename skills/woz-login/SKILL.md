@@ -13,7 +13,7 @@ If the user passed `--token <token>` as arguments, skip directly to the Token Lo
 Run the Woz authentication flow. This opens a browser for the user to log in:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js login
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js login
 ```
 
 If the command exits with code 0, login succeeded — confirm to the user.
@@ -32,7 +32,7 @@ If the browser login failed:
 Once you have the token (from args or from the user), run:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js login --token '<token>'
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js login --token '<token>'
 ```
 
 Replace `<token>` with the actual token.

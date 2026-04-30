@@ -16,14 +16,14 @@ Run the settings helper to show or update settings:
 
 ### Show current settings
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --show
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --show
 ```
 
 Display the JSON output as a readable table for the user.
 
 ### Update a setting
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set <key> <value>
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set <key> <value>
 ```
 
 Where `<key>` is a setting name and `<value>` is `true` or `false`.
@@ -55,16 +55,16 @@ Changes to this setting take effect on the **next Claude Code launch** because `
 **Examples:**
 ```bash
 # Disable attribution
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set attribution false
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set attribution false
 
 # Turn off status line tips
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set statusLineTips false
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set statusLineTips false
 
 # Disable spinner verbs
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set spinnerVerbs false
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set spinnerVerbs false
 
 # Defer WOZCODE tools behind ToolSearch (requires restart)
-node ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set alwaysLoadTools false
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/settings-helper.js --set alwaysLoadTools false
 ```
 
 After updating settings, tell the user:

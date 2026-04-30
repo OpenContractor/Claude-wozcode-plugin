@@ -7,7 +7,7 @@ allowed-tools: Bash(node *)
 Print the user's WOZCODE referral share message:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js share
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js share
 ```
 
 Relay the full output to the user. Do not summarize or modify it.

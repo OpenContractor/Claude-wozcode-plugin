@@ -7,7 +7,7 @@ allowed-tools: Bash(node *)
 Run the WOZCODE savings report:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/savings-report.js
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/savings-report.js
 ```
 
 Relay the full output to the user. Do not summarize or modify it.

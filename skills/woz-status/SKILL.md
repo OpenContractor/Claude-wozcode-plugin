@@ -7,7 +7,7 @@ allowed-tools: Bash(node *)
 Check the current Woz authentication status:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js status
+node --no-warnings=ExperimentalWarning ${CLAUDE_PLUGIN_ROOT}/scripts/wozcode-cli.js status
 ```
 
 Relay the output to the user.
