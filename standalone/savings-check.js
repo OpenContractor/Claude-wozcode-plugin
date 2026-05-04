@@ -55,12 +55,14 @@ var path2 = __toESM(require("path"), 1);
 var fs = __toESM(require("fs"), 1);
 var os = __toESM(require("os"), 1);
 var path = __toESM(require("path"), 1);
+var CLAUDE_DIR_NAME = ".claude";
+var CLAUDE_PROJECTS_DIR_NAME = "projects";
 function getClaudeHomePath(useEnv = true) {
-  const configPath = (useEnv ? process.env.CLAUDE_CONFIG_DIR : void 0) ?? path.join(os.homedir(), ".claude");
+  const configPath = (useEnv ? process.env.CLAUDE_CONFIG_DIR : void 0) ?? path.join(os.homedir(), CLAUDE_DIR_NAME);
   return configPath;
 }
 function getProjectsPath() {
-  return path.join(getClaudeHomePath(), "projects");
+  return path.join(getClaudeHomePath(), CLAUDE_PROJECTS_DIR_NAME);
 }
 
 // node_modules/zod/v4/classic/external.js
@@ -13872,7 +13874,7 @@ var SubscriptionStatusSchema = external_exports.object({
 // package.json
 var package_default = {
   name: "wozcode",
-  version: "0.3.63",
+  version: "0.3.64",
   description: "WozCode enhanced coding tools \u2014 smart search, batch editing, SQL introspection, and cost-optimized subagent delegation",
   homepage: "https://wozcode.com",
   type: "module",
@@ -13882,8 +13884,8 @@ var package_default = {
   },
   scripts: {
     build: "tsc",
-    "build:plugin:prod": "tsc && node dist/plugin/build-plugin.js",
-    "build:plugin": "tsc && node dist/plugin/build-plugin.js --no-obfuscate",
+    "build:plugin:prod": "tsc && node dist/plugin/build-plugin.js && node dist/plugin-codex/build-plugin-codex.js",
+    "build:plugin": "tsc && node dist/plugin/build-plugin.js --no-obfuscate && node dist/plugin-codex/build-plugin-codex.js --no-obfuscate",
     lint: "npx eslint src/",
     compile: "tsc --noEmit",
     format: "npx prettier --write 'src/**/*.{ts,js}'",
@@ -29083,10 +29085,10 @@ function repoPathToClaudeProjectName(repoDirPathNormalized) {
   const repoCcProjectName = repoDirPathAbs.replace(/[\\/:\s~_]/g, "-");
   return repoCcProjectName;
 }
-async function discoverSessionTranscripts(opts) {
+async function discoverSessionTranscripts(maxSessions, projectDir, projectsDirPath) {
   const sessions = [];
-  const sessionsDir = opts.projectsDirPath ?? getProjectsPath();
-  const encodedProjectDir = opts.projectDir != null ? repoPathToClaudeProjectName(opts.projectDir) : void 0;
+  const sessionsDir = projectsDirPath ?? getProjectsPath();
+  const encodedProjectDir = projectDir != null ? repoPathToClaudeProjectName(projectDir) : void 0;
   let projectDirEntries;
   try {
     projectDirEntries = (await fs3.promises.readdir(sessionsDir)).map((d) => import_path10.default.join(sessionsDir, d));
@@ -29101,7 +29103,7 @@ async function discoverSessionTranscripts(opts) {
       continue;
     }
     if (!stat.isDirectory()) continue;
-    const projectPath = dir.split("/").pop() ?? "";
+    const projectPath = import_path10.default.basename(dir);
     let filePaths;
     try {
       filePaths = (await fs3.promises.readdir(dir)).filter((f2) => f2.endsWith(".jsonl"));
@@ -29132,7 +29134,7 @@ async function discoverSessionTranscripts(opts) {
     if (aMatch !== bMatch) return bMatch ? 1 : -1;
     return b7.mtimeMs - a6.mtimeMs;
   });
-  return opts.maxSessions != null ? sessions.slice(0, opts.maxSessions) : sessions;
+  return maxSessions != null ? sessions.slice(0, maxSessions) : sessions;
 }
 async function* readLinesFromEnd(filePath, chunkSize = 65536, readFromByteOffset) {
   const fd = await fs3.promises.open(filePath, "r");
@@ -29737,9 +29739,7 @@ function aggregateSessions(results, windowDays, nowMs) {
 }
 async function computeBaselineFromProjects(projectsDir, maxSessionsRaw) {
   const maxSessions = maxSessionsRaw ?? MAX_SESSIONS;
-  const allFiles = await discoverSessionTranscripts({
-    projectsDirPath: projectsDir
-  });
+  const allFiles = await discoverSessionTranscripts(void 0, void 0, projectsDir);
   const candidates = allFiles.filter((f2) => f2.sizeBytes <= MAX_FILE_BYTES);
   const results = [];
   for (let i2 = 0; i2 < candidates.length && results.length < maxSessions; i2 += SCAN_CONCURRENCY) {

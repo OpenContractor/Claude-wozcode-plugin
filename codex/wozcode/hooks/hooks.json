@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CONFIG_DIR=${CODEX_HOME:-$HOME/.codex} node ${CODEX_HOME:-$HOME/.codex}/plugins/wozcode/scripts/update-notification.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CONFIG_DIR=${CODEX_HOME:-$HOME/.codex} node ${CODEX_HOME:-$HOME/.codex}/plugins/wozcode/scripts/savings-reporter.js"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__plugin_woz_code__Edit|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CONFIG_DIR=${CODEX_HOME:-$HOME/.codex} node ${CODEX_HOME:-$HOME/.codex}/plugins/wozcode/scripts/edit-batching-nudge.js"
+          }
+        ]
+      }
+    ]
+  }
+}
